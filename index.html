@@ -1,15 +1,26 @@
 <!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>2026 £</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستعرض الأكواد المطور</title>
+    <title>محرر الأكواد المطور | Phantom Editor</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400&display=swap" rel="stylesheet">
     
-    <!-- مكتبة JSZip لإنشاء ملفات الزيب -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
@@ -19,6 +30,10 @@
             --accent-color: #000000; 
             --text-color: #f1f5f9;
             --border-color: #222222;
+            --keyword-color: #ff79c6;
+            --tag-color: #8be9fd;
+            --attr-color: #50fa7b;
+            --comment-color: #6272a4;
         }
 
         body {
@@ -46,43 +61,107 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: -5px;
         }
 
-        textarea {
-            width: 100%;
-            height: 120px;
-            background-color: var(--card-bg);
-            color: #ffffff;
-            border: 1px solid var(--border-color);
+        .all-controls-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #0a0a0a;
+            padding: 10px;
             border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .editor-wrapper {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        #code-input, #highlight-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
             padding: 12px;
-            font-family: 'Cairo', monospace;
+            border: none;
+            font-family: 'Fira Code', monospace;
             font-size: 14px;
+            line-height: 1.5;
+            tab-size: 4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-sizing: border-box;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* التعديل المطلوب على Placeholder */
+        #code-input::placeholder {
+            font-family: 'Cairo', sans-serif;
             font-weight: 300;
+            font-size: 16px;
+            color: #444;
+            text-align: right; /* لجعل النص يبدو صحيحاً بالعربية */
+        }
+
+        #code-input {
+            background: transparent;
+            color: transparent;
+            caret-color: white;
+            resize: none;
+            z-index: 2;
             outline: none;
-            transition: 0.3s;
+        }
+
+        #highlight-layer {
+            z-index: 1;
+            color: #f8f8f2;
+            overflow-y: auto;
+            pointer-events: none;
+        }
+
+        .hl-tag { color: var(--tag-color); font-weight: bold; }
+        .hl-attr { color: var(--attr-color); }
+        .hl-keyword { color: var(--keyword-color); }
+        .hl-comment { color: var(--comment-color); font-style: italic; }
+        .hl-string { color: #f1fa8c; }
+
+        #preview-window {
+            display: none;
+            width: 100%;
+            height: 600px;
+            background-color: #ffffff; 
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
             box-sizing: border-box;
         }
 
-        textarea:focus {
-            border-color: #333;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+        #back-btn {
+            display: none;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
         }
 
-        .controls {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .bottom-controls {
-            display: flex;
-            gap: 8px;
-            justify-content: center; 
-            margin-top: 10px;
+        #back-btn img {
+            width: 30px;
+            height: 30px;
+            filter: invert(1);
         }
 
         button {
@@ -96,342 +175,295 @@
             align-items: center;
             justify-content: center;
             color: white;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 300;
         }
 
-        button img {
-            width: 20px;
-            height: 20px;
-            filter: invert(1); 
+        button:hover { background-color: #222; }
+        button img { width: 20px; height: 20px; filter: invert(1); }
+
+        .notification-container { position: relative; display: flex; align-items: center; }
+        #red-dot {
+            display: none; position: absolute; top: -2px; right: -2px;
+            width: 8px; height: 8px; background-color: red; border-radius: 50%;
         }
 
-        button:hover {
-            background-color: #111;
-            transform: scale(0.95);
-        }
-
-        #preview-window {
-            width: 100%;
-            min-height: 450px;
-            background-color: #000000; 
-            border-radius: 10px;
-            border: 2px solid var(--border-color);
-            box-sizing: border-box;
-        }
-
-        .label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        /* تنسيق النوافذ المنبثقة */
-        #history-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000000;
-            z-index: 1001;
-            overflow-y: auto;
-            padding: 20px;
-            box-sizing: border-box;
+        #history-modal, #notifications-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000000; z-index: 1001; overflow-y: auto; padding: 20px; box-sizing: border-box;
         }
 
         #filename-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #111;
-            border: 1px solid #333;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 1000;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #111; border: 1px solid #333; padding: 20px; border-radius: 10px;
+            z-index: 1000; width: 90%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        .history-item {
-            background: #0a0a0a;
-            border-bottom: 1px solid #1a1a1a;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .history-preview-box {
-            width: 50px;
-            height: 50px;
-            border: 1px solid #333;
-            background: #fff;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .history-preview-box iframe {
-            width: 400%; /* تكبير المحتوى ليظهر بشكل مصغر */
-            height: 400%;
-            transform: scale(0.25);
-            transform-origin: 0 0;
-            border: none;
-            pointer-events: none;
+        .history-item, .notification-item {
+            background: #0a0a0a; border-bottom: 1px solid #1a1a1a; padding: 15px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 15px;
         }
 
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 999;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 999;
         }
 
         .input-field {
-            width: 100%;
-            padding: 10px;
-            background: #000;
-            border: 1px solid #333;
-            color: #fff;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Cairo', sans-serif;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; background: #000; border: 1px solid #333;
+            color: #fff; border-radius: 5px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; box-sizing: border-box;
         }
 
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
+        .history-header { display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .close-history-btn { background: transparent !important; border: none !important; }
+        .close-history-btn img { width: 35px; height: 35px; filter: invert(1); }
     </style>
 </head>
 <body>
 
     <div class="modal-overlay" id="overlay" onclick="closeModals()"></div>
 
-    <!-- نافذة تسمية الملف -->
+    <div id="notifications-modal">
+        <div class="history-header">
+            <button onclick="closeModals()" class="close-history-btn">
+                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
+            </button>
+        </div>
+        <div id="notifications-list"></div>
+    </div>
+
     <div id="filename-modal">
         <h3 style="margin-top: 0; font-size: 16px;">أدخل اسم الملف</h3>
         <input type="text" id="zip-filename" class="input-field" placeholder="مثال: my_project">
-        <div style="display: flex; gap: 10px;">
-            <button onclick="confirmDownload()" style="flex: 1; background: #1a1a1a;">تحميل</button>
-            <button onclick="closeModals()" style="flex: 1; background: #000; color: #666;">إلغاء</button>
+        <div style="display:flex; gap:10px;">
+            <button onclick="confirmDownload()" style="background: #1a1a1a; flex:1;"><img src="https://images.icon-icons.com/1875/PNG/96/download_120262.png"></button>
+            <button onclick="closeModals()" style="background: #000; flex:1;"><img src="https://images.icon-icons.com/1769/PNG/96/4115230-cancel-close-cross-delete_114048.png"></button>
         </div>
     </div>
 
-    <!-- واجهة السجلات السوداء الكاملة -->
     <div id="history-modal">
         <div class="history-header">
-            <h2 style="margin: 0; font-size: 20px;">سجلات الأكواد</h2>
-            <button onclick="closeModals()" style="background: #e74c3c; border: none; padding: 5px 15px;">إغلاق</button>
+            <button onclick="closeModals()" class="close-history-btn">
+                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
+            </button>
         </div>
         <div id="history-list"></div>
     </div>
 
     <div class="container">
         <div class="top-header">
-            <div class="label">محرر الأكواد:</div>
-            <button onclick="openHistory()" title="سجلات الأكواد" style="border: none; background: transparent;">
-                <img src="https://images.icon-icons.com/508/PNG/96/settings_icon-icons.com_49858.png" alt="سجلات" style="width: 25px; height: 25px;">
+            <div id="editor-label" style="font-size: 14px; color: #666;"></div>
+            <button id="back-btn" onclick="toggleEditor()">
+                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
             </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="notification-container">
+                    <button onclick="openNotifications()" style="border: none; background: transparent;">
+                        <img src="https://images.icon-icons.com/3449/PNG/96/attention_notice_bell_alarm_reminder_alert_notification_icon_219315.png" style="width: 20px; height: 20px; filter: invert(1);">
+                    </button>
+                    <div id="red-dot"></div>
+                </div>
+                <button onclick="openHistory()" style="border: none; background: transparent;">
+                    <img src="https://images.icon-icons.com/508/PNG/96/settings_icon-icons.com_49858.png" style="width: 20px; height: 20px;">
+                </button>
+            </div>
         </div>
 
-        <textarea id="code-input" placeholder="اكتب الكود هنا..."></textarea>
+        <div class="all-controls-wrapper" id="main-controls-wrapper">
+            <div class="button-group">
+                <button onclick="copyCode()"><img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png"></button>
+                <button onclick="pasteCode()"><img src="https://images.icon-icons.com/2783/PNG/96/content_paste_copy_clipboard_icon_177307.png"></button>
+                <button onclick="clearCode()"><img src="https://images.icon-icons.com/868/PNG/96/trash_bin_icon-icons.com_67981.png"></button>
+            </div>
+            <div class="button-group">
+                <button onclick="showFilenameInput()"><img src="https://images.icon-icons.com/4043/PNG/96/file_direction_down_save_download_icon_256878.png"></button>
+                <button onclick="saveCode()"><img src="https://images.icon-icons.com/4026/PNG/96/save_icon_255899.png"></button>
+                <button onclick="runCode()" style="background: #1a1a1a;"><img src="https://images.icon-icons.com/3259/PNG/96/play_playback_icon_206354.png"></button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper" id="editor-container">
+            <div id="highlight-layer"></div>
+            <textarea id="code-input" placeholder="اكتب الكود هنا..." oninput="updateHighlight()" onscroll="syncScroll()"></textarea>
+        </div>
         
-        <div class="controls">
-            <button class="copy-btn" onclick="copyCode()" title="نسخ الكود">
-                <img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png" alt="نسخ">
-            </button>
-            <button class="paste-btn" onclick="pasteCode()" title="لصق الكود">
-                <img src="https://images.icon-icons.com/2783/PNG/96/content_paste_copy_clipboard_icon_177307.png" alt="لصق">
-            </button>
-            <button class="run-btn" onclick="runPreview()" title="تشغيل الكود">
-                <img id="play-icon" src="https://images.icon-icons.com/3259/PNG/96/play_playback_icon_206354.png" alt="تشغيل">
-            </button>
-            <button class="clear-btn" onclick="clearCode()" title="مسح الكود">
-                <img src="https://images.icon-icons.com/868/PNG/96/trash_bin_icon-icons.com_67981.png" alt="مسح">
-            </button>
-        </div>
-
-        <div class="label" style="margin-bottom: -10px;">المعاينة الحية:</div>
         <iframe id="preview-window"></iframe>
-
-        <div class="bottom-controls">
-            <button class="zip-btn" onclick="showFilenameInput()" title="تحميل ملف ZIP">
-                <img src="https://images.icon-icons.com/4043/PNG/96/file_direction_down_save_download_icon_256878.png" alt="تحميل">
-            </button>
-            <button class="save-btn" onclick="saveCode()" title="حفظ الكود">
-                <img src="https://images.icon-icons.com/4026/PNG/96/save_icon_255899.png" alt="حفظ">
-            </button>
-        </div>
     </div>
 
     <script>
-        const playImg = "https://images.icon-icons.com/3259/PNG/96/play_playback_icon_206354.png";
-        const pauseImg = "https://images.icon-icons.com/2838/PNG/96/media_playback_pause_icon_180873.png";
+        const input = document.getElementById('code-input');
+        const output = document.getElementById('highlight-layer');
 
-        function showFilenameInput() {
-            const code = document.getElementById('code-input').value;
-            if (!code.trim()) {
-                alert("يرجى كتابة كود أولاً لتحميله!");
-                return;
-            }
-            document.getElementById('filename-modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('zip-filename').focus();
+        window.onload = checkNotifications;
+
+        function updateHighlight() {
+            let text = input.value;
+            text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            text = text.replace(/(&lt;\/?[a-z1-6]+)(&gt;| )/gi, '<span class="hl-tag">$1</span>$2');
+            text = text.replace(/(class|id|style|src|href|onclick|type|rel)=/gi, '<span class="hl-attr">$1</span>=');
+            text = text.replace(/(function|let|const|var|if|else|return|for|while|document|window)/g, '<span class="hl-keyword">$1</span>');
+            text = text.replace(/(".*?"|'.*?')/g, '<span class="hl-string">$1</span>');
+            text = text.replace(/(&lt;!--.*?--&gt;|\/\/.*)/g, '<span class="hl-comment">$1</span>');
+            output.innerHTML = text + "\n";
         }
 
-        function confirmDownload() {
-            const code = document.getElementById('code-input').value;
-            let filename = document.getElementById('zip-filename').value.trim();
-            if (!filename) filename = "project_code";
-            
-            const zip = new JSZip();
-            zip.file("index.html", code);
-            
-            zip.generateAsync({type: "blob"}).then(function(content) {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = filename + ".zip";
-                link.click();
-                closeModals();
-            });
+        function syncScroll() {
+            output.scrollTop = input.scrollTop;
+            output.scrollLeft = input.scrollLeft;
         }
 
-        function saveCode() {
-            const code = document.getElementById('code-input').value;
-            if (!code.trim()) return;
-
-            let history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
-            const newEntry = {
-                id: Date.now(),
-                date: new Date().toLocaleString('ar-EG'),
-                content: code
-            };
-            
-            history.unshift(newEntry); 
-            localStorage.setItem('codeHistory', JSON.stringify(history));
-            localStorage.setItem('savedCode', code); 
-            alert('تم حفظ الكود بنجاح!');
-        }
-
-        function openHistory() {
-            const modal = document.getElementById('history-modal');
-            const list = document.getElementById('history-list');
-            const history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
-
-            list.innerHTML = history.length === 0 ? '<p style="text-align:center; color:#666; margin-top:50px;">لا توجد سجلات بعد</p>' : '';
-
-            history.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div class="history-preview-box">
-                            <iframe srcdoc="${item.content.replace(/"/g, '&quot;')}"></iframe>
-                        </div>
-                        <div>
-                            <div style="font-size:14px; font-weight:700;">كود رقم #${item.id.toString().slice(-4)}</div>
-                            <div style="font-size:12px; color:#666;">${item.date}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="restoreCode(${item.id})" style="padding:6px 15px; font-size:12px; background:#222;">استعادة</button>
-                        <button onclick="deleteHistory(${item.id})" style="padding:6px 15px; font-size:12px; background:transparent; border-color:#e74c3c; color:#e74c3c;">حذف</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // منع التمرير في الصفحة الرئيسية
-        }
-
-        function restoreCode(id) {
-            const history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
-            const item = history.find(i => i.id === id);
-            if (item) {
-                document.getElementById('code-input').value = item.content;
-                closeModals();
-                runPreview();
-            }
-        }
-
-        function deleteHistory(id) {
-            if(!confirm("هل أنت متأكد من الحذف؟")) return;
-            let history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
-            history = history.filter(i => i.id !== id);
-            localStorage.setItem('codeHistory', JSON.stringify(history));
-            openHistory(); 
+        function checkNotifications() {
+            const notes = JSON.parse(localStorage.getItem('web_notifications') || "[]");
+            document.getElementById('red-dot').style.display = notes.length > 0 ? 'block' : 'none';
         }
 
         function closeModals() {
             document.getElementById('history-modal').style.display = 'none';
+            document.getElementById('notifications-modal').style.display = 'none';
             document.getElementById('filename-modal').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
-            document.body.style.overflow = 'auto';
         }
 
-        function loadSavedCode() {
-            const saved = localStorage.getItem('savedCode');
-            if (saved) {
-                document.getElementById('code-input').value = saved;
-            }
+        function openNotifications() {
+            const list = document.getElementById('notifications-list');
+            const notes = JSON.parse(localStorage.getItem('web_notifications') || "[]");
+            list.innerHTML = notes.length ? '' : '<p style="text-align:center; color:#666">لا توجد إشعارات حالياً</p>';
+            notes.forEach((n, index) => {
+                const div = document.createElement('div');
+                div.className = 'notification-item';
+                div.innerHTML = `
+                    <div style="flex:1">
+                        <div style="font-weight:700">${n.msg}</div>
+                        <div style="font-size:10px; color:#555">${n.date}</div>
+                    </div>
+                    <button onclick="deleteNote(${index})" style="background:transparent; color:red; border:none; font-size:20px">×</button>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('notifications-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
         }
 
-        function copyCode() {
-            const codeInput = document.getElementById('code-input');
-            codeInput.select();
-            navigator.clipboard.writeText(codeInput.value);
-            alert("تم نسخ الكود!");
+        function deleteNote(index) {
+            let notes = JSON.parse(localStorage.getItem('web_notifications') || "[]");
+            notes.splice(index, 1);
+            localStorage.setItem('web_notifications', JSON.stringify(notes));
+            checkNotifications();
+            openNotifications();
         }
 
-        async function pasteCode() {
+        function copyCode() { 
+            input.select(); 
+            document.execCommand('copy'); 
+            alert('تم نسخ الكود بنجاح!'); 
+        }
+
+        async function pasteCode() { 
             try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById('code-input').value += text;
-            } catch (err) { console.error(err); }
-        }
-
-        function runPreview() {
-            const code = document.getElementById('code-input').value;
-            const previewFrame = document.getElementById('preview-window');
-            const icon = document.getElementById('play-icon');
-            const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-
-            icon.src = (icon.src === playImg) ? pauseImg : playImg;
-
-            previewDoc.open();
-            previewDoc.write(code);
-            previewDoc.close();
-        }
-
-        function clearCode() {
-            if(confirm("هل تريد مسح الكود الحالي؟")) {
-                document.getElementById('code-input').value = '';
-                document.getElementById('play-icon').src = playImg;
-                resetPreviewBackground();
+                const text = await navigator.clipboard.readText(); 
+                input.value += text; 
+                updateHighlight();
+            } catch (err) {
+                alert('فشل اللصق، يرجى التأكد من صلاحيات المتصفح');
             }
         }
 
-        function resetPreviewBackground() {
-            const previewFrame = document.getElementById('preview-window');
-            const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            previewDoc.open();
-            previewDoc.write('<body style="background-color: black;"></body>');
-            previewDoc.close();
+        function clearCode() { 
+            if(confirm('هل تريد مسح جميع الأكواد؟')) {
+                input.value = ''; 
+                updateHighlight();
+            }
         }
 
-        window.onload = () => {
-            loadSavedCode();
-            resetPreviewBackground();
-        };
+        function runCode() { 
+            const code = input.value; 
+            const previewFrame = document.getElementById('preview-window'); 
+            const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document; 
+            previewDoc.open(); 
+            previewDoc.write(code); 
+            previewDoc.close(); 
+            document.getElementById('editor-container').style.display = 'none'; 
+            document.getElementById('main-controls-wrapper').style.display = 'none'; 
+            previewFrame.style.display = 'block'; 
+            document.getElementById('back-btn').style.display = 'flex'; 
+        }
+
+        function toggleEditor() { 
+            document.getElementById('editor-container').style.display = 'block'; 
+            document.getElementById('main-controls-wrapper').style.display = 'flex'; 
+            document.getElementById('preview-window').style.display = 'none'; 
+            document.getElementById('back-btn').style.display = 'none'; 
+        }
+
+        function showFilenameInput() { 
+            document.getElementById('filename-modal').style.display = 'block'; 
+            document.getElementById('overlay').style.display = 'block'; 
+        }
+
+        function confirmDownload() { 
+            const code = input.value; 
+            const filename = document.getElementById('zip-filename').value.trim() || "project"; 
+            const zip = new JSZip(); 
+            zip.file("index.html", code); 
+            zip.generateAsync({type: "blob"}).then(function(content) { 
+                const link = document.createElement('a'); 
+                link.href = URL.createObjectURL(content); 
+                link.download = filename + ".zip"; 
+                link.click(); 
+                closeModals(); 
+            }); 
+        }
+
+        function saveCode() { 
+            const code = input.value; 
+            if(!code.trim()) return;
+            let history = JSON.parse(localStorage.getItem('codeHistory') || "[]"); 
+            history.unshift({ 
+                date: new Date().toLocaleString('ar-EG'), 
+                content: code 
+            }); 
+            localStorage.setItem('codeHistory', JSON.stringify(history.slice(0, 20)));
+            alert('تم حفظ الكود في السجلات بنجاح!');
+        }
+
+        function openHistory() {
+            const list = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
+            list.innerHTML = history.length ? '' : '<p style="text-align:center; color:#666">لا يوجد سجلات محفوظة</p>';
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div style="flex:1">
+                        <div style="font-size:14px; color:#fff">نسخة احتياطية #${history.length - index}</div>
+                        <div style="font-size:11px; color:#555">${item.date}</div>
+                    </div>
+                    <button onclick="loadHistoryItem(${index})">استعادة</button>
+                    <button onclick="deleteHistoryItem(${index})" style="background:transparent; color:red; border:none; font-size:20px">×</button>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('history-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function loadHistoryItem(index) {
+            const history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
+            input.value = history[index].content;
+            updateHighlight();
+            closeModals();
+        }
+
+        function deleteHistoryItem(index) {
+            let history = JSON.parse(localStorage.getItem('codeHistory') || "[]");
+            history.splice(index, 1);
+            localStorage.setItem('codeHistory', JSON.stringify(history));
+            openHistory();
+        }
     </script>
 </body>
+</html>
+    
+  </body>
+  
 </html>
