@@ -95,6 +95,8 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             overflow: hidden;
+            /* إضافة حواف دائرية للحاوية الأساسية */
+            border-radius: 15px;
         }
 
         #code-input,
@@ -116,6 +118,8 @@
             box-sizing: border-box;
             direction: ltr;
             text-align: left;
+            /* إضافة حواف دائرية للعناصر الداخلية لضمان تناسق التظليل */
+            border-radius: 15px;
         }
 
         #code-input::placeholder {
@@ -154,7 +158,7 @@
             width: 100%;
             height: 600px;
             background-color: #ffffff;
-            border-radius: 10px;
+            border-radius: 15px;
             border: 2px solid var(--border-color);
             box-sizing: border-box;
         }
@@ -493,6 +497,7 @@
             previewDoc.open();
             previewDoc.write(code);
             previewDoc.close();
+            
             document.getElementById('editor-container').style.display = 'none';
             document.getElementById('main-controls-wrapper').style.display = 'none';
             previewFrame.style.display = 'block';
@@ -513,58 +518,74 @@
 
         function confirmDownload() {
             const filename = document.getElementById('zip-filename').value || 'project';
-            const blob = new Blob([input.value], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename + '.html';
-            a.click();
-            closeModals();
+            const zip = new JSZip();
+            zip.file("index.html", input.value);
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `${filename}.zip`;
+                link.click();
+                closeModals();
+            });
         }
 
         function saveCode() {
-             document.getElementById('save-project-modal').style.display = 'block';
-             document.getElementById('overlay').style.display = 'block';
+            document.getElementById('save-project-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
         }
 
         function confirmSave() {
             const name = document.getElementById('project-name-input').value;
-            if(name) {
-                const history = JSON.parse(localStorage.getItem('phantom_history') || "[]");
-                history.push({ name: name, code: input.value, date: new Date().toLocaleString() });
-                localStorage.setItem('phantom_history', JSON.stringify(history));
-                alert('تم حفظ المشروع بنجاح');
+            if (name) {
+                const history = JSON.parse(localStorage.getItem('code_history') || "[]");
+                history.unshift({
+                    name: name,
+                    code: input.value,
+                    date: new Date().toLocaleString('ar-EG')
+                });
+                localStorage.setItem('code_history', JSON.stringify(history.slice(0, 20)));
                 closeModals();
+                alert('تم حفظ المشروع بنجاح!');
             }
         }
 
         function openHistory() {
             const list = document.getElementById('history-list');
-            const history = JSON.parse(localStorage.getItem('phantom_history') || "[]");
-            list.innerHTML = history.length ? '' : '<p style="text-align:center; color:#666">لا يوجد سجل مشاريع</p>';
+            const history = JSON.parse(localStorage.getItem('code_history') || "[]");
+            list.innerHTML = history.length ? '' : '<p style="text-align:center; color:#666">لا توجد مشاريع محفوظة</p>';
             history.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
                 div.innerHTML = `
-                    <div style="flex:1">
-                        <div style="font-weight:700">${item.name}</div>
-                        <div style="font-size:10px; color:#555">${item.date}</div>
-                    </div>
-                    <button onclick="loadFromHistory(${index})">فتح</button>
-                `;
+                <div style="flex:1">
+                    <div style="font-weight:900">${item.name}</div>
+                    <div style="font-size:12px; color:#555">${item.date}</div>
+                </div>
+                <div style="display:flex; gap:5px">
+                    <button onclick="loadHistory(${index})">فتح</button>
+                    <button onclick="deleteHistory(${index})" style="color:red">حذف</button>
+                </div>
+            `;
                 list.appendChild(div);
             });
-            history.push
             document.getElementById('history-modal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
         }
 
-        function loadFromHistory(index) {
-            const history = JSON.parse(localStorage.getItem('phantom_history') || "[]");
+        function loadHistory(index) {
+            const history = JSON.parse(localStorage.getItem('code_history') || "[]");
             input.value = history[index].code;
             updateHighlight();
             closeModals();
         }
+
+        function deleteHistory(index) {
+            let history = JSON.parse(localStorage.getItem('code_history') || "[]");
+            history.splice(index, 1);
+            localStorage.setItem('code_history', JSON.stringify(history));
+            openHistory();
+        }
     </script>
 </body>
+
 </html>
