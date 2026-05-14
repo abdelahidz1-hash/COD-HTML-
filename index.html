@@ -420,8 +420,8 @@
                 if (timeLeft <= 0 || n.used) {
                     if (timerElement) {
                         timerElement.innerHTML = n.used ? "تم استخدام الرابط" : "انتهت صلاحية الرابط";
-                        const btn = timerElement.parentElement.querySelector('.view-link-btn');
-                        if(btn) btn.disabled = true;
+                        const btns = timerElement.parentElement.querySelectorAll('.view-link-btn');
+                        btns.forEach(btn => btn.disabled = true);
                     }
                 } else {
                     if (timerElement) {
@@ -446,9 +446,14 @@
                     <span class="warning-text">⚠️ سيتم تعطيل الرابط فور فتحه أو تحديث الصفحة!</span>
                     <div style="color:#50fa7b; font-size:12px; word-break:break-all; margin-top:5px;">https://cod.html.2027</div>
                     <span class="timer-text" id="timer-${n.id}">...</span>
-                    <button onclick="openExternalLink('${n.link}', ${n.expiry}, ${index})" class="view-link-btn" ${n.used ? 'disabled' : ''}>
-                        <img src="https://images.icon-icons.com/510/PNG/96/eye_icon-icons.com_50398.png">
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openExternalLink('${n.link}', ${n.expiry}, ${index})" class="view-link-btn" title="فتح الرابط" ${n.used ? 'disabled' : ''}>
+                            <img src="https://images.icon-icons.com/510/PNG/96/eye_icon-icons.com_50398.png">
+                        </button>
+                        <button onclick="copyToClipboard('${n.link}')" class="view-link-btn" title="نسخ الرابط الحقيقي" ${n.used ? 'disabled' : ''}>
+                            <img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png">
+                        </button>
+                    </div>
                 </div>
                 <button onclick="deleteNote(${index})" style="background:transparent; color:red; border:none; font-size:20px">×</button>
             `;
@@ -457,6 +462,16 @@
             document.getElementById('notifications-modal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
             updateAllTimers();
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert('تم نسخ الرابط الحقيقي (Blob) إلى الحافظة!');
         }
 
         function openExternalLink(url, expiry, index) {
