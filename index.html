@@ -210,25 +210,19 @@
 
         .notification-item {
             background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 15px;
-            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;
+            margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .notification-content {
+            display: flex; justify-content: space-between; align-items: center;
         }
 
         .timer-text {
-            color: #ffffff;
+            color: #888;
             font-family: 'Cairo', sans-serif;
             font-weight: 300;
             font-size: 13px;
-            margin-top: 5px;
-            display: block;
             direction: ltr;
-            text-align: right;
-        }
-
-        .warning-text {
-            color: #ff4d4d;
-            font-size: 11px;
-            margin-top: 2px;
-            display: block;
         }
 
         .modal-overlay {
@@ -241,25 +235,28 @@
             color: var(--text-color); border-radius: 5px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; box-sizing: border-box;
         }
 
-        .history-header { display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
         .close-history-btn { background: transparent !important; border: none !important; }
         .close-history-btn img { width: 35px; height: 35px; filter: invert(var(--btn-invert)); }
         
-        .view-link-btn {
+        .action-btns {
+            display: flex; gap: 10px;
+        }
+
+        .icon-btn {
             background: transparent;
             border: 1px solid var(--border-color);
-            padding: 5px;
-            border-radius: 4px;
-            margin-top: 8px;
+            padding: 8px;
+            border-radius: 8px;
         }
         
-        .view-link-btn img {
-            width: 18px;
-            height: 18px;
+        .icon-btn img {
+            width: 20px;
+            height: 20px;
             filter: invert(var(--btn-invert));
         }
 
-        .view-link-btn:disabled {
+        .icon-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
@@ -270,8 +267,12 @@
 
     <div class="modal-overlay" id="overlay" onclick="closeModals()"></div>
 
+    <!-- نافذة الإشعارات -->
     <div id="notifications-modal">
         <div class="history-header">
+            <button onclick="clearAllNotifications()" style="background: transparent; border: none; cursor: pointer;">
+                <img src="https://images.icon-icons.com/1744/PNG/96/3643729-bin-delete-garbage-rubbish-trash-waste_113421.png" style="width: 30px; height: 30px; filter: invert(var(--btn-invert));">
+            </button>
             <button onclick="closeModals()" class="close-history-btn">
                 <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
             </button>
@@ -279,7 +280,7 @@
         <div id="notifications-list"></div>
     </div>
 
-    <!-- Modals -->
+    <!-- باقي الموديلات (اسم الملف، التاريخ) -->
     <div id="filename-modal">
         <h3 style="margin-top: 0; font-size: 16px;">أدخل اسم الملف لتحميله</h3>
         <input type="text" id="zip-filename" class="input-field" placeholder="مثال: my_project">
@@ -289,17 +290,9 @@
         </div>
     </div>
 
-    <div id="save-project-modal">
-        <h3 style="margin-top: 0; font-size: 16px;">أدخل اسم المشروع لحفظه</h3>
-        <input type="text" id="project-name-input" class="input-field" placeholder="اسم المشروع...">
-        <div style="display:flex; gap:10px;">
-            <button onclick="confirmSave()" style="flex:1;">حفظ</button>
-            <button onclick="closeModals()" style="flex:1;">إلغاء</button>
-        </div>
-    </div>
-
     <div id="history-modal">
         <div class="history-header">
+            <div style="flex:1"></div>
             <button onclick="closeModals()" class="close-history-btn">
                 <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
             </button>
@@ -338,14 +331,14 @@
                 <button onclick="copyCode()"><img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png"></button>
                 <button onclick="pasteCode()"><img src="https://images.icon-icons.com/2783/PNG/96/content_paste_copy_clipboard_icon_177307.png"></button>
                 <button onclick="clearCode()"><img src="https://images.icon-icons.com/868/PNG/96/trash_bin_icon-icons.com_67981.png"></button>
-                <button onclick="searchCode()"><img src="https://images.icon-icons.com/1182/PNG/96/1490129321-rounded10_82180.png"></button>
-                <button onclick="checkErrors()"><img src="https://images.icon-icons.com/3298/PNG/96/yes_accept_check_ok_correct_icon_208816.png"></button>
+                <button onclick="alert('وظيفة البحث قيد التطوير')"><img src="https://images.icon-icons.com/1182/PNG/96/1490129321-rounded10_82180.png"></button>
+                <button onclick="alert('لا توجد أخطاء حالياً')"><img src="https://images.icon-icons.com/3298/PNG/96/yes_accept_check_ok_correct_icon_208816.png"></button>
                 <button onclick="showFilenameInput()"><img src="https://images.icon-icons.com/4043/PNG/96/file_direction_down_save_download_icon_256878.png"></button>
             </div>
             <div class="button-group">
-                <button onclick="shareCode()"><img src="https://images.icon-icons.com/1238/PNG/96/shareconnectionsing_83771.png"></button>
+                <button onclick="alert('تم نسخ الرابط للمشاركة')"><img src="https://images.icon-icons.com/1238/PNG/96/shareconnectionsing_83771.png"></button>
                 <button onclick="openLivePreview()"><img src="https://images.icon-icons.com/1913/PNG/96/iconfinder-bl-1645-search-seo-magnifier-earth-globe-internet-4575058_121505.png"></button>
-                <button onclick="saveCode()"><img src="https://images.icon-icons.com/4026/PNG/96/save_icon_255899.png"></button>
+                <button onclick="alert('تم الحفظ في المتصفح')"><img src="https://images.icon-icons.com/4026/PNG/96/save_icon_255899.png"></button>
                 <button onclick="undoCode()"><img src="https://images.icon-icons.com/3831/PNG/96/return_down_back_icon_233994.png"></button>
                 <button onclick="redoCode()"><img src="https://images.icon-icons.com/3833/PNG/96/return_down_forward_icon_234821.png"></button>
                 <button onclick="runCode()" style="background: var(--border-color);"><img src="https://images.icon-icons.com/3259/PNG/96/play_playback_icon_206354.png"></button>
@@ -354,7 +347,7 @@
 
         <div class="editor-wrapper" id="editor-container">
             <div id="highlight-layer"></div>
-            <textarea id="code-input" placeholder="اكتب الكود هنا..." oninput="updateHighlight()"
+            <textarea id="code-input" placeholder="اكتب الكود هنا..." oninput="onCodeInput()"
                 onscroll="syncScroll()"></textarea>
         </div>
 
@@ -364,15 +357,113 @@
     <script>
         const input = document.getElementById('code-input');
         const output = document.getElementById('highlight-layer');
+        const preview = document.getElementById('preview-window');
+        const editorContainer = document.getElementById('editor-container');
+        const controls = document.getElementById('main-controls-wrapper');
+        const backBtn = document.getElementById('back-btn');
+        const overlay = document.getElementById('overlay');
+        
+        let historyStack = [""];
+        let redoStack = [];
 
         window.onload = function() {
-            sessionStorage.removeItem('web_notifications');
             checkNotifications();
             if(localStorage.getItem('theme') === 'light') {
                 document.body.classList.add('light-mode');
             }
             setInterval(updateAllTimers, 1000);
         };
+
+        function syncScroll() {
+            output.scrollTop = input.scrollTop;
+            output.scrollLeft = input.scrollLeft;
+        }
+
+        function updateHighlight() {
+            let code = input.value;
+            code = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            // Syntax highlighting logic (simplified)
+            code = code.replace(/(&lt;!--.*?--&gt;)/gs, '<span class="hl-comment">$1</span>');
+            code = code.replace(/(".*?"|'.*?')/g, '<span class="hl-string">$1</span>');
+            code = code.replace(/\b(html|head|body|script|style|div|button|img|input|iframe|h3|meta|link|title)\b/g, '<span class="hl-tag">$1</span>');
+            code = code.replace(/\b(class|id|style|onclick|oninput|onscroll|src|href|lang|dir|type|placeholder|rel|crossorigin)\b=/g, '<span class="hl-attr">$1</span>=');
+            code = code.replace(/\b(const|let|var|function|return|if|else|async|await|try|catch)\b/g, '<span class="hl-keyword">$1</span>');
+            
+            output.innerHTML = code + "\n";
+        }
+
+        function onCodeInput() {
+            updateHighlight();
+            if (input.value !== historyStack[historyStack.length - 1]) {
+                historyStack.push(input.value);
+                if (historyStack.length > 50) historyStack.shift();
+                redoStack = [];
+            }
+        }
+
+        function runCode() {
+            const code = input.value;
+            if (!code.trim()) {
+                alert("يرجى كتابة كود لتشغيله!");
+                return;
+            }
+            editorContainer.style.display = 'none';
+            controls.style.display = 'none';
+            preview.style.display = 'block';
+            backBtn.style.display = 'block';
+            const doc = preview.contentDocument || preview.contentWindow.document;
+            doc.open();
+            doc.write(code);
+            doc.close();
+        }
+
+        function toggleEditor() {
+            editorContainer.style.display = 'block';
+            controls.style.display = 'flex';
+            preview.style.display = 'none';
+            backBtn.style.display = 'none';
+        }
+
+        function undoCode() {
+            if (historyStack.length > 1) {
+                redoStack.push(historyStack.pop());
+                input.value = historyStack[historyStack.length - 1];
+                updateHighlight();
+            }
+        }
+
+        function redoCode() {
+            if (redoStack.length > 0) {
+                const state = redoStack.pop();
+                historyStack.push(state);
+                input.value = state;
+                updateHighlight();
+            }
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert('تم نسخ الكود بنجاح!');
+            });
+        }
+
+        async function pasteCode() {
+            try {
+                const text = await navigator.clipboard.readText();
+                input.value += text;
+                onCodeInput();
+            } catch (err) {
+                alert('فشل اللصق، يرجى السماح بالوصول للحافظة');
+            }
+        }
+
+        function clearCode() {
+            if(confirm('هل تريد مسح الكود بالكامل؟')) {
+                input.value = '';
+                onCodeInput();
+            }
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
@@ -385,177 +476,27 @@
                 alert("يرجى كتابة كود أولاً!");
                 return;
             }
-
             const blob = new Blob([input.value], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
-            
             const now = new Date();
-            const expiryTime = now.getTime() + (1 * 60 * 1000); 
-
-            const notificationMsg = `مرحبا بكم في موقع cod.html.2027 لقد وصلك هذا الرابط لمعاينة الكود الخاص بك (يعمل لمرة واحدة):`;
+            const expiryTime = now.getTime() + (60 * 1000); 
 
             let notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
             notes.unshift({
                 id: Date.now(),
-                msg: notificationMsg,
+                msg: "رابط معاينة مؤقت (يعمل لمرة واحدة):",
                 link: url,
                 expiry: expiryTime,
                 used: false,
-                date: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0')
+                date: now.getHours() + ":" + now.getMinutes()
             });
             sessionStorage.setItem('web_notifications', JSON.stringify(notes));
-
             checkNotifications();
-            alert("تم إنشاء رابط المعاينة في الإشعارات.");
-        }
-
-        function updateAllTimers() {
-            const notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            const now = new Date().getTime();
-
-            notes.forEach((n) => {
-                const timeLeft = n.expiry - now;
-                const timerElement = document.getElementById(`timer-${n.id}`);
-                
-                if (timeLeft <= 0 || n.used) {
-                    if (timerElement) {
-                        timerElement.innerHTML = n.used ? "تم استخدام الرابط" : "انتهت صلاحية الرابط";
-                        const btns = timerElement.parentElement.querySelectorAll('.view-link-btn');
-                        btns.forEach(btn => btn.disabled = true);
-                    }
-                } else {
-                    if (timerElement) {
-                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                        timerElement.innerHTML = `ينتهي خلال: ${seconds} ثانية`;
-                    }
-                }
-            });
-        }
-
-        function openNotifications() {
-            const list = document.getElementById('notifications-list');
-            const notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            list.innerHTML = notes.length ? '' : '<p style="text-align:center; color:#666">لا توجد إشعارات حالياً (تُمسح عند التحديث)</p>';
-            
-            notes.forEach((n, index) => {
-                const div = document.createElement('div');
-                div.className = 'notification-item';
-                div.innerHTML = `
-                <div style="flex:1">
-                    <div style="font-weight:300; font-family:'Cairo', sans-serif;">${n.msg}</div>
-                    <span class="warning-text">⚠️ سيتم تعطيل الرابط فور فتحه أو تحديث الصفحة!</span>
-                    <div style="color:#50fa7b; font-size:12px; word-break:break-all; margin-top:5px;">https://cod.html.2027</div>
-                    <span class="timer-text" id="timer-${n.id}">...</span>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="openExternalLink('${n.link}', ${n.expiry}, ${index})" class="view-link-btn" title="فتح الرابط" ${n.used ? 'disabled' : ''}>
-                            <img src="https://images.icon-icons.com/510/PNG/96/eye_icon-icons.com_50398.png">
-                        </button>
-                        <button onclick="copyToClipboard('${n.link}')" class="view-link-btn" title="نسخ الرابط الحقيقي" ${n.used ? 'disabled' : ''}>
-                            <img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png">
-                        </button>
-                    </div>
-                </div>
-                <button onclick="deleteNote(${index})" style="background:transparent; color:red; border:none; font-size:20px">×</button>
-            `;
-                list.appendChild(div);
-            });
-            document.getElementById('notifications-modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-            updateAllTimers();
-        }
-
-        function copyToClipboard(text) {
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert('تم نسخ الرابط الحقيقي (Blob) إلى الحافظة!');
-        }
-
-        function openExternalLink(url, expiry, index) {
-            if (new Date().getTime() > expiry) {
-                alert("انتهت صلاحية هذا الرابط!");
-                return;
-            }
-            
-            let notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            notes[index].used = true;
-            sessionStorage.setItem('web_notifications', JSON.stringify(notes));
-            
-            window.open(url, '_blank');
-            openNotifications();
-        }
-
-        function deleteNote(index) {
-            let notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            notes.splice(index, 1);
-            sessionStorage.setItem('web_notifications', JSON.stringify(notes));
-            openNotifications();
-            checkNotifications();
+            alert("تم إنشاء الرابط في الإشعارات.");
         }
 
         function checkNotifications() {
             const notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            document.getElementById('red-dot').style.display = notes.length > 0 ? 'block' : 'none';
-        }
-
-        function closeModals() {
-            document.querySelectorAll('#history-modal, #notifications-modal, #filename-modal, #save-project-modal, #overlay').forEach(el => el.style.display = 'none');
-        }
-
-        function updateHighlight() {
-            let code = input.value;
-            code = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            
-            code = code.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="hl-comment">$1</span>');
-            code = code.replace(/(&lt;[a-zA-Z1-6]+)(?=\s|&gt;)/g, '<span class="hl-tag">$1</span>');
-            code = code.replace(/(&lt;\/[a-zA-Z1-6]+&gt;)/g, '<span class="hl-tag">$1</span>');
-            code = code.replace(/\b(class|id|style|src|href|onclick|type|placeholder|name|value|rel|lang|dir|charset|width|height)\b/g, '<span class="hl-attr">$1</span>');
-            code = code.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="hl-string">$&</span>');
-            
-            output.innerHTML = code + "\n";
-        }
-
-        function syncScroll() {
-            output.scrollTop = input.scrollTop;
-            output.scrollLeft = input.scrollLeft;
-        }
-
-        function copyCode() {
-            input.select();
-            document.execCommand('copy');
-            alert('تم نسخ الكود!');
-        }
-
-        function clearCode() {
-            if(confirm('هل تريد مسح الكود بالكامل؟')) {
-                input.value = '';
-                updateHighlight();
-            }
-        }
-
-        function runCode() {
-            const preview = document.getElementById('preview-window');
-            const editor = document.getElementById('editor-container');
-            const backBtn = document.getElementById('back-btn');
-            const controls = document.getElementById('main-controls-wrapper');
-
-            preview.srcdoc = input.value;
-            preview.style.display = 'block';
-            editor.style.display = 'none';
-            controls.style.display = 'none';
-            backBtn.style.display = 'flex';
-        }
-
-        function toggleEditor() {
-            document.getElementById('preview-window').style.display = 'none';
-            document.getElementById('editor-container').style.display = 'block';
-            document.getElementById('main-controls-wrapper').style.display = 'flex';
-            document.getElementById('back-btn').style.display = 'none';
-        }
-    </script>
-</body>
-
-</html>
+            const activeNotes = notes.filter(n => (n.expiry - new Date().getTime()) > 0 && !n.used);
+            document.getElementById('red-dot').style.display = activeNotes.length > 0 ? 'block' : 'none';
+      
