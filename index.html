@@ -1,502 +1,78 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محرر الأكواد المطور | Phantom Editor</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400&display=swap" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
+    <title>تطبيق الويب</title>
     <style>
-        :root {
-            --bg-color: #000000;
-            --card-bg: #111111;
-            --accent-color: #000000;
-            --text-color: #f1f5f9;
-            --border-color: #222222;
-            --keyword-color: #ff79c6;
-            --tag-color: #8be9fd;
-            --attr-color: #50fa7b;
-            --comment-color: #6272a4;
-            --input-bg: transparent;
-            --btn-invert: 1;
-        }
-
-        .light-mode {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --accent-color: #e0e0e0;
-            --text-color: #1a1a1a;
-            --border-color: #cccccc;
-            --keyword-color: #d73a49;
-            --tag-color: #005cc5;
-            --attr-color: #6f42c1;
-            --comment-color: #6a737d;
-            --btn-invert: 0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 300;
+        /* إعدادات عامة */
+        body, html {
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 15px;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .container {
+            padding: 0;
             width: 100%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .all-controls-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            background: var(--card-bg);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .editor-wrapper {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
+            height: 100%;
             overflow: hidden;
-            border-radius: 15px;
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
         }
 
-        #code-input,
-        #highlight-layer {
-            position: absolute;
+        /* شاشة التحميل (Splash Screen) */
+        #splash-screen {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            margin: 0;
-            padding: 12px;
-            border: none;
-            font-family: 'Fira Code', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            tab-size: 4;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            box-sizing: border-box;
-            direction: ltr;
-            text-align: left;
-            border-radius: 15px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
         }
 
-        #code-input::placeholder {
-            font-family: 'Cairo', sans-serif;
-            font-weight: 300;
-            font-size: 16px;
-            color: #888;
-            text-align: right;
+        #splash-screen img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
 
-        #code-input {
-            background: transparent;
-            color: transparent;
-            caret-color: var(--text-color);
-            resize: none;
-            z-index: 2;
-            outline: none;
-        }
-
-        #highlight-layer {
-            z-index: 1;
-            color: var(--text-color);
-            overflow-y: auto;
-            pointer-events: none;
-        }
-
-        .hl-tag { color: var(--tag-color); font-weight: bold; }
-        .hl-attr { color: var(--attr-color); }
-        .hl-keyword { color: var(--keyword-color); }
-        .hl-comment { color: var(--comment-color); font-style: italic; }
-        .hl-string { color: #f1fa8c; }
-        .light-mode .hl-string { color: #032f62; }
-
-        #preview-window {
+        /* حاوية الموقع (Iframe) */
+        #content-frame {
             display: none;
             width: 100%;
-            height: 600px;
-            background-color: #ffffff;
-            border-radius: 15px;
-            border: 2px solid var(--border-color);
-            box-sizing: border-box;
-        }
-
-        #back-btn {
-            display: none;
-            background-color: transparent;
+            height: 100vh;
             border: none;
-            cursor: pointer;
-        }
-
-        #back-btn img {
-            width: 30px;
-            height: 30px;
-            filter: invert(var(--btn-invert));
-        }
-
-        button {
-            background-color: var(--accent-color);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 300;
-        }
-
-        button:hover { opacity: 0.8; }
-        button img { width: 20px; height: 20px; filter: invert(var(--btn-invert)); }
-
-        .notification-container { position: relative; display: flex; align-items: center; }
-        #red-dot {
-            display: none; position: absolute; top: -2px; right: -2px;
-            width: 8px; height: 8px; background-color: red; border-radius: 50%;
-        }
-
-        #history-modal, #notifications-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 1001; overflow-y: auto; padding: 20px; box-sizing: border-box;
-        }
-
-        #filename-modal, #save-project-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 10px;
-            z-index: 1000; width: 90%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        .notification-item {
-            background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 15px;
-            margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;
-        }
-
-        .notification-content {
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .timer-text {
-            color: #888;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 300;
-            font-size: 13px;
-            direction: ltr;
-        }
-
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 999;
-        }
-
-        .input-field {
-            width: 100%; padding: 10px; background: var(--bg-color); border: 1px solid var(--border-color);
-            color: var(--text-color); border-radius: 5px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; box-sizing: border-box;
-        }
-
-        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
-        .close-history-btn { background: transparent !important; border: none !important; }
-        .close-history-btn img { width: 35px; height: 35px; filter: invert(var(--btn-invert)); }
-        
-        .action-btns {
-            display: flex; gap: 10px;
-        }
-
-        .icon-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            border-radius: 8px;
-        }
-        
-        .icon-btn img {
-            width: 20px;
-            height: 20px;
-            filter: invert(var(--btn-invert));
-        }
-
-        .icon-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
         }
     </style>
 </head>
-
 <body>
 
-    <div class="modal-overlay" id="overlay" onclick="closeModals()"></div>
-
-    <!-- نافذة الإشعارات -->
-    <div id="notifications-modal">
-        <div class="history-header">
-            <button onclick="clearAllNotifications()" style="background: transparent; border: none; cursor: pointer;">
-                <img src="https://images.icon-icons.com/1744/PNG/96/3643729-bin-delete-garbage-rubbish-trash-waste_113421.png" style="width: 30px; height: 30px; filter: invert(var(--btn-invert));">
-            </button>
-            <button onclick="closeModals()" class="close-history-btn">
-                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
-            </button>
-        </div>
-        <div id="notifications-list"></div>
+    <!-- الشاشة البيضاء مع الصورة -->
+    <div id="splash-screen">
+        <img src="https://i.ibb.co/KckjHnj8/images-5.jpg" alt="Logo">
     </div>
 
-    <!-- باقي الموديلات (اسم الملف، التاريخ) -->
-    <div id="filename-modal">
-        <h3 style="margin-top: 0; font-size: 16px;">أدخل اسم الملف لتحميله</h3>
-        <input type="text" id="zip-filename" class="input-field" placeholder="مثال: my_project">
-        <div style="display:flex; gap:10px;">
-            <button onclick="confirmDownload()" style="flex:1;"><img src="https://images.icon-icons.com/1875/PNG/96/download_120262.png"></button>
-            <button onclick="closeModals()" style="flex:1;"><img src="https://images.icon-icons.com/1769/PNG/96/4115230-cancel-close-cross-delete_114048.png"></button>
-        </div>
-    </div>
-
-    <div id="history-modal">
-        <div class="history-header">
-            <div style="flex:1"></div>
-            <button onclick="closeModals()" class="close-history-btn">
-                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
-            </button>
-        </div>
-        <div id="history-list"></div>
-    </div>
-
-    <div class="container">
-        <div class="top-header">
-            <div id="editor-label" style="font-size: 14px; color: #666;"></div>
-            <button id="back-btn" onclick="toggleEditor()">
-                <img src="https://images.icon-icons.com/3162/PNG/96/left_return_arrow_icon_193335.png">
-            </button>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <button onclick="toggleTheme()" style="border: none; background: transparent;">
-                    <img src="https://images.icon-icons.com/1579/PNG/96/3586363-creative-idea-light-lightbulb_107937.png"
-                        style="width: 25px; height: 25px; filter: invert(var(--btn-invert));">
-                </button>
-                
-                <div class="notification-container">
-                    <button onclick="openNotifications()" style="border: none; background: transparent;">
-                        <img src="https://images.icon-icons.com/3449/PNG/96/attention_notice_bell_alarm_reminder_alert_notification_icon_219315.png"
-                            style="width: 20px; height: 20px; filter: invert(var(--btn-invert));">
-                    </button>
-                    <div id="red-dot"></div>
-                </div>
-                <button onclick="openHistory()" style="border: none; background: transparent;">
-                    <img src="https://images.icon-icons.com/508/PNG/96/settings_icon-icons.com_49858.png"
-                        style="width: 20px; height: 20px; filter: invert(var(--btn-invert));">
-                </button>
-            </div>
-        </div>
-
-        <div class="all-controls-wrapper" id="main-controls-wrapper">
-            <div class="button-group">
-                <button onclick="copyCode()"><img src="https://images.icon-icons.com/3476/PNG/96/internet_browser_essential_basic_website_web_paste_copy_ui_icon_219913.png"></button>
-                <button onclick="pasteCode()"><img src="https://images.icon-icons.com/2783/PNG/96/content_paste_copy_clipboard_icon_177307.png"></button>
-                <button onclick="clearCode()"><img src="https://images.icon-icons.com/868/PNG/96/trash_bin_icon-icons.com_67981.png"></button>
-                <button onclick="alert('وظيفة البحث قيد التطوير')"><img src="https://images.icon-icons.com/1182/PNG/96/1490129321-rounded10_82180.png"></button>
-                <button onclick="alert('لا توجد أخطاء حالياً')"><img src="https://images.icon-icons.com/3298/PNG/96/yes_accept_check_ok_correct_icon_208816.png"></button>
-                <button onclick="showFilenameInput()"><img src="https://images.icon-icons.com/4043/PNG/96/file_direction_down_save_download_icon_256878.png"></button>
-            </div>
-            <div class="button-group">
-                <button onclick="alert('تم نسخ الرابط للمشاركة')"><img src="https://images.icon-icons.com/1238/PNG/96/shareconnectionsing_83771.png"></button>
-                <button onclick="openLivePreview()"><img src="https://images.icon-icons.com/1913/PNG/96/iconfinder-bl-1645-search-seo-magnifier-earth-globe-internet-4575058_121505.png"></button>
-                <button onclick="alert('تم الحفظ في المتصفح')"><img src="https://images.icon-icons.com/4026/PNG/96/save_icon_255899.png"></button>
-                <button onclick="undoCode()"><img src="https://images.icon-icons.com/3831/PNG/96/return_down_back_icon_233994.png"></button>
-                <button onclick="redoCode()"><img src="https://images.icon-icons.com/3833/PNG/96/return_down_forward_icon_234821.png"></button>
-                <button onclick="runCode()" style="background: var(--border-color);"><img src="https://images.icon-icons.com/3259/PNG/96/play_playback_icon_206354.png"></button>
-            </div>
-        </div>
-
-        <div class="editor-wrapper" id="editor-container">
-            <div id="highlight-layer"></div>
-            <textarea id="code-input" placeholder="اكتب الكود هنا..." oninput="onCodeInput()"
-                onscroll="syncScroll()"></textarea>
-        </div>
-
-        <iframe id="preview-window"></iframe>
-    </div>
+    <!-- نافذة عرض الموقع -->
+    <iframe id="content-frame" src="https://hushed-amaranth-af5wtpdsrz.edgeone.app/"></iframe>
 
     <script>
-        const input = document.getElementById('code-input');
-        const output = document.getElementById('highlight-layer');
-        const preview = document.getElementById('preview-window');
-        const editorContainer = document.getElementById('editor-container');
-        const controls = document.getElementById('main-controls-wrapper');
-        const backBtn = document.getElementById('back-btn');
-        const overlay = document.getElementById('overlay');
-        
-        let historyStack = [""];
-        let redoStack = [];
+        // الانتظار لمدة 5000 ميلي ثانية (5 ثوانٍ)
+        setTimeout(function() {
+            var splash = document.getElementById('splash-screen');
+            var frame = document.getElementById('content-frame');
 
-        window.onload = function() {
-            checkNotifications();
-            if(localStorage.getItem('theme') === 'light') {
-                document.body.classList.add('light-mode');
-            }
-            setInterval(updateAllTimers, 1000);
-        };
-
-        function syncScroll() {
-            output.scrollTop = input.scrollTop;
-            output.scrollLeft = input.scrollLeft;
-        }
-
-        function updateHighlight() {
-            let code = input.value;
-            code = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            // إخفاء شاشة التحميل
+            splash.style.opacity = '0';
             
-            // Syntax highlighting logic (simplified)
-            code = code.replace(/(&lt;!--.*?--&gt;)/gs, '<span class="hl-comment">$1</span>');
-            code = code.replace(/(".*?"|'.*?')/g, '<span class="hl-string">$1</span>');
-            code = code.replace(/\b(html|head|body|script|style|div|button|img|input|iframe|h3|meta|link|title)\b/g, '<span class="hl-tag">$1</span>');
-            code = code.replace(/\b(class|id|style|onclick|oninput|onscroll|src|href|lang|dir|type|placeholder|rel|crossorigin)\b=/g, '<span class="hl-attr">$1</span>=');
-            code = code.replace(/\b(const|let|var|function|return|if|else|async|await|try|catch)\b/g, '<span class="hl-keyword">$1</span>');
+            // إظهار الموقع بعد انتهاء تأثير التلاشي
+            setTimeout(function() {
+                splash.style.display = 'none';
+                frame.style.display = 'block';
+            }, 500);
             
-            output.innerHTML = code + "\n";
-        }
+        }, 5000);
+    </script>
+</body>
+</html>
 
-        function onCodeInput() {
-            updateHighlight();
-            if (input.value !== historyStack[historyStack.length - 1]) {
-                historyStack.push(input.value);
-                if (historyStack.length > 50) historyStack.shift();
-                redoStack = [];
-            }
-        }
-
-        function runCode() {
-            const code = input.value;
-            if (!code.trim()) {
-                alert("يرجى كتابة كود لتشغيله!");
-                return;
-            }
-            editorContainer.style.display = 'none';
-            controls.style.display = 'none';
-            preview.style.display = 'block';
-            backBtn.style.display = 'block';
-            const doc = preview.contentDocument || preview.contentWindow.document;
-            doc.open();
-            doc.write(code);
-            doc.close();
-        }
-
-        function toggleEditor() {
-            editorContainer.style.display = 'block';
-            controls.style.display = 'flex';
-            preview.style.display = 'none';
-            backBtn.style.display = 'none';
-        }
-
-        function undoCode() {
-            if (historyStack.length > 1) {
-                redoStack.push(historyStack.pop());
-                input.value = historyStack[historyStack.length - 1];
-                updateHighlight();
-            }
-        }
-
-        function redoCode() {
-            if (redoStack.length > 0) {
-                const state = redoStack.pop();
-                historyStack.push(state);
-                input.value = state;
-                updateHighlight();
-            }
-        }
-
-        function copyCode() {
-            navigator.clipboard.writeText(input.value).then(() => {
-                alert('تم نسخ الكود بنجاح!');
-            });
-        }
-
-        async function pasteCode() {
-            try {
-                const text = await navigator.clipboard.readText();
-                input.value += text;
-                onCodeInput();
-            } catch (err) {
-                alert('فشل اللصق، يرجى السماح بالوصول للحافظة');
-            }
-        }
-
-        function clearCode() {
-            if(confirm('هل تريد مسح الكود بالكامل؟')) {
-                input.value = '';
-                onCodeInput();
-            }
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const currentTheme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
-            localStorage.setItem('theme', currentTheme);
-        }
-
-        function openLivePreview() {
-            if (!input.value || !input.value.trim()) {
-                alert("يرجى كتابة كود أولاً!");
-                return;
-            }
-            const blob = new Blob([input.value], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const now = new Date();
-            const expiryTime = now.getTime() + (60 * 1000); 
-
-            let notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            notes.unshift({
-                id: Date.now(),
-                msg: "رابط معاينة مؤقت (يعمل لمرة واحدة):",
-                link: url,
-                expiry: expiryTime,
-                used: false,
-                date: now.getHours() + ":" + now.getMinutes()
-            });
-            sessionStorage.setItem('web_notifications', JSON.stringify(notes));
-            checkNotifications();
-            alert("تم إنشاء الرابط في الإشعارات.");
-        }
-
-        function checkNotifications() {
-            const notes = JSON.parse(sessionStorage.getItem('web_notifications') || "[]");
-            const activeNotes = notes.filter(n => (n.expiry - new Date().getTime()) > 0 && !n.used);
-            document.getElementById('red-dot').style.display = activeNotes.length > 0 ? 'block' : 'none';
-      
